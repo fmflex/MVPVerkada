@@ -1,0 +1,32 @@
+---
+description: Verkada MCP server — architecture, auth, and layout
+alwaysApply: true
+---
+
+# Verkada MCP Server
+
+TypeScript MCP server wrapping the Verkada API. See `AGENTS.md` for full reference.
+
+## Key facts
+
+- **Entry:** `src/index.ts` — registers tools from `src/tools/{cameras,access,users,analytics}.ts`
+- **API client:** `src/services/client.ts` — token exchange + `get/post/put/patch/delete`
+- **HTTP credentials:** `AsyncLocalStorage` in `src/services/context.ts` → `getRequestClient()`
+- **Tool naming:** `verkada_<action>_<resource>` (29 tools in repo)
+- **Responses:** JSON as text; large lists truncated at 50k chars (`CHARACTER_LIMIT`)
+
+## Auth (never store secrets in server for HTTP mode)
+
+Headers: `x-verkada-api-key`, `x-verkada-org-id`, `x-verkada-region` (us|eu|au|oh)
+Fallback env: `VERKADA_API_KEY`, `VERKADA_ORG_ID`, `VERKADA_REGION`
+
+## Transports
+
+- `TRANSPORT=stdio` (default) — local, env vars
+- `TRANSPORT=http` — `POST /mcp`, credentials per request
+
+## When editing
+
+- Match existing tool patterns in `src/tools/`
+- Run `npm run build` after TypeScript changes
+- Cursor's `user-verkada` MCP may be a separate deployment with ~130 auto-generated tools

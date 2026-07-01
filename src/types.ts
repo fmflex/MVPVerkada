@@ -1,0 +1,125 @@
+// Shared TypeScript types for Verkada MCP
+
+export interface VerkadaConfig {
+  apiKey: string;
+  orgId: string;
+  region: "us" | "eu" | "au" | "oh";
+}
+
+export interface ApiTokenResponse {
+  token: string;
+}
+
+// --- Camera types ---
+export interface Camera {
+  camera_id: string;
+  name: string;
+  site?: string;
+  location?: string;
+  model?: string;
+  serial?: string;
+  mac?: string;
+  local_ip?: string;
+  status?: string;
+  firmware?: string;
+}
+
+// --- Access types ---
+export interface AccessUser {
+  user_id: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  employee_id?: string;
+  external_id?: string;
+}
+
+export interface Door {
+  door_id: string;
+  name?: string;
+  site_id?: string;
+}
+
+export interface AccessGroup {
+  group_id: string;
+  name: string;
+}
+
+export interface AccessCard {
+  card_id: string;
+  card_number?: string;
+  facility_code?: string;
+  active?: boolean;
+}
+
+// --- Event types ---
+export interface AccessEvent {
+  event_id?: string;
+  user_id?: string;
+  door_id?: string;
+  event_type?: string;
+  event_time?: number;
+}
+
+export interface Alert {
+  camera_id?: string;
+  created?: number;
+  notification_type?: string;
+  image_url?: string;
+  video_url?: string;
+  objects?: string[];
+  person_label?: string;
+  crowd_threshold?: number;
+}
+
+// --- LPR types ---
+export interface LicensePlateOfInterest {
+  license_plate_number: string;
+  description?: string;
+  created?: number;
+}
+
+// --- Person of Interest ---
+export interface PersonOfInterest {
+  person_id: string;
+  label: string;
+  created?: number;
+  last_seen?: number;
+}
+
+// --- User (core org user) ---
+export interface OrgUser {
+  user_id?: string;
+  external_id: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+}
+
+// --- Audit log ---
+export interface AuditLog {
+  timestamp?: string;
+  user_email?: string;
+  ip_address?: string;
+  event_info?: Record<string, unknown>;
+  device_info?: Record<string, unknown>;
+}
+
+// --- Sensor ---
+export interface SensorReading {
+  timestamp?: number;
+  value?: number;
+  unit?: string;
+}
+
+// Generic paginated response
+export interface PaginatedResponse<T> {
+  data: T[];
+  next_page_token?: string;
+}
+
+// MCP tool response helpers
+export interface ToolResult {
+  content: Array<{ type: "text"; text: string }>;
+  isError?: boolean;
+}

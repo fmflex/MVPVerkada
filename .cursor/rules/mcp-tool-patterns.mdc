@@ -1,0 +1,44 @@
+---
+description: Patterns for adding or editing Verkada MCP tools
+globs: src/tools/**/*.ts
+alwaysApply: false
+---
+
+# MCP Tool Patterns
+
+## Template
+
+```typescript
+server.registerTool(
+  "verkada_<verb>_<noun>",
+  {
+    title: "Human Title",
+    description: `What it does.\n\nArgs:\n  - field (type): description\n\nReturns: shape\n\nExamples:\n  - Use when: "..."`,
+    inputSchema: z.object({ /* fields */ }).strict(),
+    annotations: {
+      readOnlyHint: true,      // GET-style
+      destructiveHint: false,  // true for deletes
+      idempotentHint: true,
+      openWorldHint: true,     // queries external API
+    },
+  },
+  async (args) => {
+    try {
+      const client = getRequestClient();
+      const data = await client.get<unknown>("/path", { /* params */ });
+      return { content: [{ type: "text" as const, text: truncate(JSON.stringify(data, null, 2), CHARACTER_LIMIT) }] };
+    } catch (err) {
+      return { content: [{ type: "text" as const, text: `Error: ${formatError(err)}` }], isError: true };
+    }
+  }
+);
+```
+
+## Rules
+
+- Always use `getRequestClient()` — never instantiate `VerkadaClient` in handlers
+- Use `.strict()` on Zod schemas; `.refine()` for "provide one of" fields
+- `truncate()` for list endpoints; skip for small single-object responses
+- `client.post(path, body)` for writes; `client.delete(path, params)` for deletes
+- `org_id` is auto-injected — do not require it in tool args
+- Register new modules in `src/index.ts` via `register*Tools(server)`
