@@ -7,8 +7,10 @@
  *   x-verkada-api-key: vkkey_...          (required)
  *   x-verkada-org-id:  your-org-id        (required)
  *   x-verkada-region:  us|eu|au|oh        (optional, default: us)
+ *   x-verkada-command-subdomain: your-org  (optional, for Command deep links)
  *
  * Fallback: set VERKADA_API_KEY + VERKADA_ORG_ID env vars for local use.
+ * Optional: VERKADA_COMMAND_SUBDOMAIN for Command history URLs (see verkada_get_org_info).
  *
  * Transport:
  *   TRANSPORT=http   → cloud / remote MCP clients
@@ -24,12 +26,14 @@ import { registerCameraTools } from "./tools/cameras.js";
 import { registerAccessTools } from "./tools/access.js";
 import { registerUserTools } from "./tools/users.js";
 import { registerAnalyticsTools } from "./tools/analytics.js";
+import { registerOrgTools } from "./tools/org.js";
 function createServer() {
     const server = new McpServer({ name: "verkada-mcp-server", version: "1.0.0" });
     registerCameraTools(server);
     registerAccessTools(server);
     registerUserTools(server);
     registerAnalyticsTools(server);
+    registerOrgTools(server);
     return server;
 }
 // ---------------------------------------------------------------------------

@@ -7,8 +7,10 @@
  *   x-verkada-api-key: vkkey_...          (required)
  *   x-verkada-org-id:  your-org-id        (required)
  *   x-verkada-region:  us|eu|au|oh        (optional, default: us)
+ *   x-verkada-command-subdomain: your-org  (optional, for Command deep links)
  *
  * Fallback: set VERKADA_API_KEY + VERKADA_ORG_ID env vars for local use.
+ * Optional: VERKADA_COMMAND_SUBDOMAIN for Command history URLs (see verkada_get_org_info).
  *
  * Transport:
  *   TRANSPORT=http   → cloud / remote MCP clients

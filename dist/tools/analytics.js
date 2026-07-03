@@ -48,7 +48,7 @@ Examples:
         description: `Returns all License Plates of Interest (LPOIs) for the organization.
 
 Returns:
-  { "license_plates_of_interest": [{ "license_plate_number", "description", "created" }] }
+  { "license_plate_of_interest": [{ "license_plate", "description", "creation_time" }] }
 
 Examples:
   - Use when: "Show all flagged license plates"
@@ -73,23 +73,23 @@ Examples:
         description: `Creates a new License Plate of Interest in the organization.
 
 Args:
-  - license_plate_number (string): License plate number (alphanumeric)
-  - description (string, optional): Description or reason for flagging
+  - license_plate (string): License plate number (alphanumeric)
+  - description (string): Description or reason for flagging
 
 Returns: Created LPOI object.
 
 Examples:
   - Use when: "Flag license plate ABC123 as suspicious"`,
         inputSchema: z.object({
-            license_plate_number: z.string().min(1).describe("License plate number"),
-            description: z.string().optional().describe("Description/reason for this LPOI"),
+            license_plate: z.string().min(1).describe("License plate number"),
+            description: z.string().min(1).describe("Description/reason for this LPOI"),
         }).strict(),
         annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
-    }, async ({ license_plate_number, description }) => {
+    }, async ({ license_plate, description }) => {
         try {
             const client = getRequestClient();
             const data = await client.post("/cameras/v1/analytics/lpr/license_plate_of_interest", {
-                license_plate_number,
+                license_plate,
                 description,
             });
             return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
@@ -106,21 +106,68 @@ Examples:
         description: `Removes a License Plate of Interest from the organization.
 
 Args:
-  - license_plate_number (string): The license plate number to remove
+  - license_plate (string): The license plate number to remove
 
 Examples:
   - Use when: "Remove license plate ABC123 from the flagged list"`,
         inputSchema: z.object({
-            license_plate_number: z.string().min(1).describe("License plate number to remove"),
+            license_plate: z.string().min(1).describe("License plate number to remove"),
         }).strict(),
         annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
-    }, async ({ license_plate_number }) => {
+    }, async ({ license_plate }) => {
         try {
             const client = getRequestClient();
             const data = await client.delete("/cameras/v1/analytics/lpr/license_plate_of_interest", {
-                license_plate_number,
+                license_plate,
             });
             return { content: [{ type: "text", text: JSON.stringify(data ?? { success: true }, null, 2) }] };
+        }
+        catch (err) {
+            return { content: [{ type: "text", text: `Error: ${formatError(err)}` }], isError: true };
+        }
+    });
+    // -----------------------------------------------------------------------
+    // Get Seen License Plates (LPR images)
+    // -----------------------------------------------------------------------
+    server.registerTool("verkada_get_lpr_images", {
+        title: "Get Seen License Plates",
+        description: `Returns timestamps, detected license plate numbers, and images for all plates seen by an LPR-enabled camera.
+
+Args:
+  - camera_id (string): LPR-enabled camera ID (required; one camera per request)
+  - license_plate (string, optional): Filter results to a specific plate number
+  - start_time (number, optional): Unix timestamp (seconds). Defaults to 24 hours ago.
+  - end_time (number, optional): Unix timestamp (seconds). Defaults to now.
+  - page_size (number, optional): Items per page (default 100, max 200)
+  - page_token (number, optional): Pagination token from a previous response
+
+Returns:
+  { "camera_id", "detections": [{ "license_plate", "timestamp", "image_url", "vehicle_image_url" }], "next_page_token" }
+
+Examples:
+  - Use when: "Show all license plates seen by camera X today"
+  - Use when: "Get LPR detections with images from the parking lot camera"`,
+        inputSchema: z.object({
+            camera_id: z.string().min(1).describe("LPR-enabled camera ID"),
+            license_plate: z.string().optional().describe("Optional filter for a specific license plate"),
+            start_time: z.number().int().positive().optional().describe("Unix timestamp (seconds) start"),
+            end_time: z.number().int().positive().optional().describe("Unix timestamp (seconds) end"),
+            page_size: z.number().int().positive().max(200).optional().describe("Items per page (default 100, max 200)"),
+            page_token: z.number().int().optional().describe("Pagination token from next_page_token"),
+        }).strict(),
+        annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+    }, async ({ camera_id, license_plate, start_time, end_time, page_size, page_token }) => {
+        try {
+            const client = getRequestClient();
+            const data = await client.get("/cameras/v1/analytics/lpr/images", {
+                camera_id,
+                license_plate,
+                start_time,
+                end_time,
+                page_size,
+                page_token,
+            });
+            return { content: [{ type: "text", text: truncate(JSON.stringify(data, null, 2), CHARACTER_LIMIT) }] };
         }
         catch (err) {
             return { content: [{ type: "text", text: `Error: ${formatError(err)}` }], isError: true };
@@ -131,34 +178,40 @@ Examples:
     // -----------------------------------------------------------------------
     server.registerTool("verkada_get_lpr_timestamps", {
         title: "Get License Plate Timestamps",
-        description: `Returns all timestamps when a specific license plate was seen by LPR-enabled cameras.
+        description: `Returns timestamps when a specific license plate was seen by a single LPR-enabled camera.
 
 Args:
-  - license_plate_number (string): The license plate to look up
-  - start_time (number, optional): Unix timestamp (seconds)
-  - end_time (number, optional): Unix timestamp (seconds)
-  - page_token (string, optional): Pagination token
+  - camera_id (string): LPR-enabled camera ID (required; one camera per request)
+  - license_plate (string): The license plate to look up
+  - start_time (number, optional): Unix timestamp (seconds). Defaults to 24 hours ago.
+  - end_time (number, optional): Unix timestamp (seconds). Defaults to now.
+  - page_size (number, optional): Items per page (default 100, max 200)
+  - page_token (number, optional): Pagination token from a previous response
 
 Returns:
-  { "timestamps": [number], "next_page_token": string }
+  { "camera_id", "license_plate", "detections": [number], "next_page_token" }
 
 Examples:
-  - Use when: "When was license plate ABC123 last seen?"
-  - Use when: "Track visits by vehicle XYZ789"`,
+  - Use when: "When was license plate ABC123 seen on camera X?"
+  - Use when: "Track visits by vehicle XYZ789 at the entrance camera"`,
         inputSchema: z.object({
-            license_plate_number: z.string().min(1).describe("License plate number to look up"),
-            start_time: z.number().int().positive().optional().describe("Unix timestamp start"),
-            end_time: z.number().int().positive().optional().describe("Unix timestamp end"),
-            page_token: z.string().optional().describe("Pagination token"),
+            camera_id: z.string().min(1).describe("LPR-enabled camera ID"),
+            license_plate: z.string().min(1).describe("License plate number to look up"),
+            start_time: z.number().int().positive().optional().describe("Unix timestamp (seconds) start"),
+            end_time: z.number().int().positive().optional().describe("Unix timestamp (seconds) end"),
+            page_size: z.number().int().positive().max(200).optional().describe("Items per page (default 100, max 200)"),
+            page_token: z.number().int().optional().describe("Pagination token from next_page_token"),
         }).strict(),
         annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
-    }, async ({ license_plate_number, start_time, end_time, page_token }) => {
+    }, async ({ camera_id, license_plate, start_time, end_time, page_size, page_token }) => {
         try {
             const client = getRequestClient();
             const data = await client.get("/cameras/v1/analytics/lpr/timestamps", {
-                license_plate_number,
+                camera_id,
+                license_plate,
                 start_time,
                 end_time,
+                page_size,
                 page_token,
             });
             return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };

@@ -278,7 +278,8 @@ All tools use the `verkada_` prefix.
 | `verkada_list_license_plates_of_interest` | List flagged license plates |
 | `verkada_create_license_plate_of_interest` | Flag a license plate |
 | `verkada_delete_license_plate_of_interest` | Remove a flagged plate |
-| `verkada_get_lpr_timestamps` | LPR detection timestamps |
+| `verkada_get_lpr_images` | All license plates seen by an LPR camera (with images) |
+| `verkada_get_lpr_timestamps` | Timestamps for a specific plate on one LPR camera |
 | `verkada_list_persons_of_interest` | List persons of interest |
 | `verkada_create_person_of_interest` | Create a person of interest |
 | `verkada_delete_person_of_interest` | Delete a person of interest |

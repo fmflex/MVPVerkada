@@ -67,14 +67,14 @@ index.ts → register*Tools() → tool handler
 
 Health check: `GET /health`
 
-## MCP tools in this repo (29 tools, `verkada_*` prefix)
+## MCP tools in this repo (30 tools, `verkada_*` prefix)
 
 | Module | Tools |
 |--------|-------|
 | `cameras.ts` | `verkada_get_cameras`, `verkada_get_alerts`, `verkada_get_object_counts`, `verkada_get_latest_thumbnail`, `verkada_get_streaming_token` |
 | `access.ts` | `verkada_list_access_users`, `verkada_get_access_user`, `verkada_unlock_door_admin`, `verkada_unlock_door_user`, `verkada_get_doors`, `verkada_list_access_groups`, `verkada_add_user_to_group`, `verkada_remove_user_from_group`, `verkada_get_access_events`, `verkada_add_access_card`, `verkada_set_user_pin` |
 | `users.ts` | `verkada_create_user`, `verkada_get_user`, `verkada_update_user`, `verkada_delete_user` |
-| `analytics.ts` | `verkada_get_audit_logs`, `verkada_list_license_plates_of_interest`, `verkada_create_license_plate_of_interest`, `verkada_delete_license_plate_of_interest`, `verkada_get_lpr_timestamps`, `verkada_list_persons_of_interest`, `verkada_create_person_of_interest`, `verkada_delete_person_of_interest`, `verkada_get_sensor_data` |
+| `analytics.ts` | `verkada_get_audit_logs`, `verkada_list_license_plates_of_interest`, `verkada_create_license_plate_of_interest`, `verkada_delete_license_plate_of_interest`, `verkada_get_lpr_images`, `verkada_get_lpr_timestamps`, `verkada_list_persons_of_interest`, `verkada_create_person_of_interest`, `verkada_delete_person_of_interest`, `verkada_get_sensor_data` |
 
 **Note:** A connected Cursor MCP server (`user-verkada`) may expose a larger auto-generated tool set (~130 tools, no `verkada_` prefix, nested `query` params). That is a separate deployment surface; this repo is the hand-maintained subset.
 
@@ -114,6 +114,8 @@ npm install
 npm run dev      # tsx src/index.ts (stdio)
 npm run build    # tsc → dist/
 npm start        # node dist/index.js
+npm test         # unit tests (mocked, no credentials)
+npm run test:integration  # live API (VERKADA_API_KEY + VERKADA_ORG_ID required)
 
 # HTTP mode
 TRANSPORT=http PORT=8080 npm run dev

@@ -11,11 +11,11 @@ export function registerUserTools(server: McpServer): void {
     "verkada_create_user",
     {
       title: "Create Org User",
-      description: `Creates a new user in the Verkada organization. external_id is required.
+      description: `Creates a new user in the Verkada organization. external_id is required. At least one of email, first_name, or last_name must also be provided.
 
 Args:
   - external_id (string): Organization-defined unique identifier (required)
-  - email (string, optional): User email
+  - email (string, optional): User email (provide at least one of email, first_name, last_name)
   - first_name (string, optional): First name
   - last_name (string, optional): Last name
 
@@ -28,7 +28,10 @@ Examples:
         email: z.string().email().optional().describe("User email"),
         first_name: z.string().optional().describe("First name"),
         last_name: z.string().optional().describe("Last name"),
-      }).strict(),
+      }).strict().refine(
+        (d) => d.email || d.first_name || d.last_name,
+        "Provide at least one of: email, first_name, or last_name"
+      ),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     },
     async ({ external_id, email, first_name, last_name }) => {

@@ -21,3 +21,18 @@ export function getRequestClient(): VerkadaClient {
   const ctx = requestContext.getStore();
   return getClient(ctx?.headers);
 }
+
+function firstHeader(val: string | string[] | undefined): string | undefined {
+  if (!val) return undefined;
+  return Array.isArray(val) ? val[0] : val;
+}
+
+/**
+ * Command org subdomain for deep links (e.g. "verkada-sg" → verkada-sg.command.verkada.com).
+ * Resolution: x-verkada-command-subdomain header, then VERKADA_COMMAND_SUBDOMAIN env.
+ */
+export function getCommandSubdomain(): string | undefined {
+  const ctx = requestContext.getStore();
+  const fromHeader = firstHeader(ctx?.headers?.["x-verkada-command-subdomain"]);
+  return fromHeader ?? process.env.VERKADA_COMMAND_SUBDOMAIN ?? undefined;
+}

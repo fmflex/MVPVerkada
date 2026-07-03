@@ -37,6 +37,14 @@ export class VerkadaClient {
     return getBaseUrl(this.region);
   }
 
+  get organizationId(): string {
+    return this.orgId;
+  }
+
+  get apiRegion(): VerkadaRegion {
+    return this.region;
+  }
+
   // -----------------------------------------------------------------------
   // Token management
   // -----------------------------------------------------------------------
@@ -159,6 +167,50 @@ export class VerkadaClient {
     params?: Record<string, string | number | boolean | undefined>
   ): Promise<T> {
     return this.request<T>("GET", path, { params });
+  }
+
+  /** GET binary response (e.g. camera thumbnails return image/jpeg). */
+  async getBinary(
+    path: string,
+    params?: Record<string, string | number | boolean | undefined>,
+    accept = "image/jpeg"
+  ): Promise<{ data: Buffer; contentType: string }> {
+    const token = await this.getToken();
+
+    const url = new URL(`${this.baseUrl}${path}`);
+    if (params) {
+      for (const [key, value] of Object.entries(params)) {
+        if (value !== undefined) {
+          url.searchParams.set(key, String(value));
+        }
+      }
+    }
+
+    if (!url.searchParams.has("org_id")) {
+      url.searchParams.set("org_id", this.orgId);
+    }
+
+    const response = await fetch(url.toString(), {
+      method: "GET",
+      headers: {
+        accept,
+        "x-verkada-auth": token,
+      },
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      if (response.status === 401) {
+        this.tokenCache = null;
+      }
+      throw new Error(
+        `Verkada API error ${response.status} on GET ${path}: ${body}`
+      );
+    }
+
+    const contentType = response.headers.get("content-type") ?? accept;
+    const data = Buffer.from(await response.arrayBuffer());
+    return { data, contentType };
   }
 
   post<T>(path: string, body?: unknown, params?: Record<string, string | number | boolean | undefined>): Promise<T> {

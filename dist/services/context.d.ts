@@ -13,5 +13,10 @@ interface RequestContext {
 export declare const requestContext: AsyncLocalStorage<RequestContext>;
 /** Call this inside tool handlers to get a client scoped to the current request's credentials. */
 export declare function getRequestClient(): VerkadaClient;
+/**
+ * Command org subdomain for deep links (e.g. "verkada-sg" → verkada-sg.command.verkada.com).
+ * Resolution: x-verkada-command-subdomain header, then VERKADA_COMMAND_SUBDOMAIN env.
+ */
+export declare function getCommandSubdomain(): string | undefined;
 export {};
 //# sourceMappingURL=context.d.ts.map

@@ -20,6 +20,8 @@ export declare class VerkadaClient {
     private tokenCache;
     constructor(apiKey: string, orgId: string, region?: VerkadaRegion);
     get baseUrl(): string;
+    get organizationId(): string;
+    get apiRegion(): VerkadaRegion;
     private isTokenValid;
     getToken(): Promise<string>;
     request<T>(method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE", path: string, options?: {
@@ -29,6 +31,11 @@ export declare class VerkadaClient {
         useApiKey?: boolean;
     }): Promise<T>;
     get<T>(path: string, params?: Record<string, string | number | boolean | undefined>): Promise<T>;
+    /** GET binary response (e.g. camera thumbnails return image/jpeg). */
+    getBinary(path: string, params?: Record<string, string | number | boolean | undefined>, accept?: string): Promise<{
+        data: Buffer;
+        contentType: string;
+    }>;
     post<T>(path: string, body?: unknown, params?: Record<string, string | number | boolean | undefined>): Promise<T>;
     put<T>(path: string, body?: unknown, params?: Record<string, string | number | boolean | undefined>): Promise<T>;
     patch<T>(path: string, body?: unknown, params?: Record<string, string | number | boolean | undefined>): Promise<T>;
