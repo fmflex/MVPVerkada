@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment / secrets — never commit credentials
+.env
+.env.*
+!.env.example
+
+# Local editor / agent settings (may contain approved commands with secrets)
+.claude/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test / debug artifacts
+coverage/
